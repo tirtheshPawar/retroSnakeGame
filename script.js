@@ -1,10 +1,16 @@
 const board = document.getElementById("game-board");
+const instructionText = document.getElementById("instruction-text");
+const logo = document.getElementById('logo');
 
 // Defining game variables
 let snake = [{x: 10, y:10}]; //object stored inside array, x&y coords defining 10,10 middle of the board starting position
 const gridSize = 20;
 let food = generateFood();
 let direction = 'right';
+let gameInterval;
+let gameSpeedDelay = 200;
+let gameStarted = false;
+
 
 // Draws game map, snake and food
 function draw(){
@@ -38,7 +44,7 @@ function setPosition(element, position){
 }
 
 // Testing draw function 
-draw();
+// draw();
 
 // Draw food
 function drawFood(){
@@ -74,11 +80,59 @@ function move(){
     }
 
     snake.unshift(head); //adds a head object to the beginning of the snake array, const head will be added to the top of the array each time the position changes
-    snake.pop();
+    // snake.pop();
+    if(head.x === food.x && head.y === food.y){
+        food = generateFood(); // Since we have run into the food we need new food on the map now
+        clearInterval(); //Resetting movement (move) function
+        gameInterval = setInterval(()=>{
+            move();
+            draw();
+        },gameSpeedDelay);
+    }else{
+        snake.pop(); // main method contributing to the increase or decrease of the snake size. So if snake doesnt run into food then pop the tail (remove) hence it is placed in else
+    }
 }
 
 // test moving
-setInterval(()=>{
-    move();
-    draw();
-},200)
+// setInterval(()=>{
+//     move();
+//     draw();
+// },200)
+
+function startGame(){
+    gameStarted = true; //Keeping track of the running game  
+    instructionText.style.display = 'none';
+    logo.style.display = 'none';
+    gameInterval = setInterval(()=>{
+        move();
+        // checkCollision();
+        draw();
+    }, gameSpeedDelay);
+}
+
+//Event listener for key press
+function handleKeyPress(event){
+    if(
+    (!gameStarted && event.code === "Space" )||
+    (!gameStarted && event.key === " " )) //handling for every other browser
+    {
+        startGame();
+    }else{
+        switch(event.key){
+            case 'ArrowUp':
+                direction = 'up';
+                break;
+            case 'ArrowDown':
+                direction = 'down';
+                break;
+            case 'ArrowLeft':
+                direction = 'left';
+                break;
+            case 'ArrowRight':
+                direction = 'right';
+                break;
+        }
+    }
+}
+
+document.addEventListener('keydown',handleKeyPress)
